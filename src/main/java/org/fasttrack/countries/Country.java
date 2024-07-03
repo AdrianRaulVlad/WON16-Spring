@@ -1,5 +1,6 @@
 package org.fasttrack.countries;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ public class Country {
     private final long id;
     private final String name;
     private final String capital;
+    // @JsonIgnore
     private final long population;
     private final long area;
     private final String continent;

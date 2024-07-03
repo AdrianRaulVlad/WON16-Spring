@@ -2,7 +2,11 @@ package org.fasttrack.countries;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.fasttrack.countries.exception.EntityNotFoundException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CountryService {
     private final CountryReader countryReader;
+    private final RestClient restClient;
     private final List<Country> countries = new ArrayList<>();
 
     @PostConstruct
@@ -105,5 +110,16 @@ public class CountryService {
         return countries.stream()
                 .filter(country -> country.getNeighbours().contains(neighborX) && !country.getNeighbours().contains(neighborY))
                 .collect(Collectors.toList());
+    }
+
+    public ExternalCountry getExternalDataById(long id) {
+        Country country = getById(id).orElseThrow(() -> new EntityNotFoundException("Can't retrieve external data for missing country", id));
+        ResponseEntity<List<ExternalCountry>> response = restClient.get()
+                .uri("https://restcountries.com/v3.1/name/" + country.getName() + "?fullText=true")
+                .retrieve()
+                .toEntity(new ParameterizedTypeReference<>() {
+                });
+        return response.getBody().get(0);
+
     }
 }
